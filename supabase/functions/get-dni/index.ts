@@ -1,3 +1,4 @@
+
 /**
  * Esta función obtiene el DNI de una persona
  * En una próxima versión, se integrará otro tipo de documento
@@ -5,11 +6,14 @@
  * @param {string} numero - El número de DNI
  */
 
+import { corsHeaders } from '../_shared/cors.ts'
+
+
 console.log("Hello from getDNI!");
 
 //Types: DNI | RUC
 
-const DEFAULT_HEADER = { headers: { "Content-Type": "application/json" }, status: 400 }
+const DEFAULT_HEADER = { headers: {...corsHeaders, "Content-Type": "application/json" }, status: 400 }
 const API_SERVICES = {
   APISNET: {
     DNI: {
@@ -52,13 +56,28 @@ const API_SERVICES = {
 const API_SERVICE_DEFAULT = "APISNET";
 
 Deno.serve(async (req) => {
+  
+  console.log("Step 1", typeof req.json)
 
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders})
+  }
+
+  console.log("Step 2", typeof req.json)
   
   try{
 
+
     if(!req?.json) throw new Error("Petición inválida")
 
+      console.log("Step 3", typeof req.json)
+
+      console.log('Recibiendo solicitud:', req.method, req.url);
+      console.log('req.body -->', req.body) 
+
       let { numero, demo } = await req.json();
+
+      console.log("Step 4", typeof req.json)
 
       if(!numero) throw new Error("Número de documento no especificado");
     
@@ -92,11 +111,15 @@ Deno.serve(async (req) => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          "Content-Type": "application/json"
+          //"Content-Type": "application/json"
         }
       });
       
       if (!response.ok)  throw new Error(`Error al obtener información del ${tipo} especificado`);
+
+      console.log("RESPONS JSON", typeof response.json)
+
+      //if(!response.json)
       
       const result = await response.json();
     
